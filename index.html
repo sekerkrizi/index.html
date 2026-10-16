@@ -1,0 +1,931 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f8fc">
+<meta name="description" content="Şeker Krizi işletme yönetimi, gelir gider takibi, hesaplar ve borç alacak yönetimi.">
+<title>Şeker Krizi | İşletme Yönetimi</title>
+<style>
+:root{
+  --bg:#f6f7fb;
+  --card:#fff;
+  --text:#20243a;
+  --muted:#858ba0;
+  --primary:#6558e8;
+  --primary-light:#f0eeff;
+  --green:#15966a;
+  --green-light:#e9f8f1;
+  --red:#dc4e63;
+  --red-light:#fff0f2;
+  --border:#eceef5;
+  --nav:#fff;
+  --shadow:0 4px 20px rgba(35,40,75,.045);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{
+  outline:3px solid #c9c4ff;
+  outline-offset:2px;
+}
+button:disabled{opacity:.5;cursor:not-allowed}
+.app{min-height:100vh}
+.sidebar{
+  position:fixed;
+  left:0;top:0;bottom:0;
+  width:245px;
+  padding:25px 17px;
+  background:#fff;
+  border-right:1px solid var(--border);
+  z-index:10;
+}
+.brand{
+  display:flex;align-items:center;gap:12px;
+  padding:3px 8px 30px;
+}
+.brand-icon{
+  width:43px;height:43px;border-radius:14px;
+  display:grid;place-items:center;
+  background:var(--primary-light);
+  color:var(--primary);font-size:22px;
+}
+.brand-name{font-size:17px;font-weight:850;letter-spacing:-.5px}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.nav-label{
+  color:#a0a5b7;font-size:10px;font-weight:800;
+  letter-spacing:1.2px;padding:10px 12px;
+}
+.nav{display:grid;gap:6px}
+.nav-btn{
+  border:0;background:transparent;color:#777d92;
+  display:flex;align-items:center;gap:12px;
+  width:100%;padding:13px 14px;border-radius:12px;
+  text-align:left;font-weight:650;font-size:13px;
+  transition:.18s;
+}
+.nav-btn .nav-icon{width:23px;text-align:center;font-size:18px}
+.nav-btn:hover{background:#f7f7fc;color:var(--text)}
+.nav-btn.active{background:var(--primary-light);color:var(--primary)}
+.sidebar-bottom{
+  position:absolute;left:17px;right:17px;bottom:22px;
+  border:1px solid var(--border);border-radius:14px;
+  padding:14px;background:#fafaff;
+}
+.sidebar-bottom strong{font-size:12px}
+.sidebar-bottom p{font-size:11px;color:var(--muted);line-height:1.6;margin:7px 0 0}
+.main{
+  margin-left:245px;
+  padding:29px 34px 35px;
+  max-width:1700px;
+}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;margin-bottom:26px;
+}
+.topbar h1{font-size:26px;letter-spacing:-.8px;margin:0 0 7px}
+.subtitle{font-size:12px;color:var(--muted);line-height:1.6}
+.top-actions{display:flex;align-items:center;gap:9px}
+.today-chip{
+  padding:10px 13px;background:#fff;border:1px solid var(--border);
+  border-radius:10px;color:#6f758a;font-size:12px;
+}
+.btn{
+  border:0;border-radius:11px;padding:12px 16px;
+  background:var(--primary);color:#fff;font-weight:750;
+  font-size:12px;display:inline-flex;align-items:center;
+  justify-content:center;gap:7px;transition:.15s;
+}
+.btn:hover{filter:brightness(.96)}
+.btn.secondary{background:var(--primary-light);color:var(--primary)}
+.btn.light{background:#f5f6fa;color:#555c73}
+.btn.danger{background:var(--red-light);color:var(--red)}
+.btn.small{padding:8px 11px;font-size:11px;border-radius:8px}
+.btn.full{width:100%}
+.section{display:none}
+.section.active{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:.5;transform:translateY(3px)}to{opacity:1;transform:none}}
+.section-heading{margin:0 0 16px}
+.section-heading h2{font-size:16px;margin:0 0 5px;letter-spacing:-.3px}
+.section-heading p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.cards{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:15px;margin-bottom:20px;
+}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:17px;padding:19px;min-width:0;box-shadow:var(--shadow);
+}
+.stat-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stat-label{font-size:12px;color:var(--muted);font-weight:600}
+.stat-icon{
+  width:34px;height:34px;display:grid;place-items:center;
+  border-radius:11px;background:var(--primary-light);font-size:17px;
+}
+.stat-icon.green-bg{background:var(--green-light)}
+.stat-icon.red-bg{background:var(--red-light)}
+.stat-value{
+  margin-top:17px;font-size:clamp(20px,2vw,27px);
+  font-weight:850;letter-spacing:-.8px;overflow-wrap:anywhere;
+}
+.stat-foot{font-size:11px;color:var(--muted);margin-top:9px}
+.green{color:var(--green)!important}
+.red{color:var(--red)!important}
+.purple{color:var(--primary)!important}
+.layout-2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:17px}
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:17px;padding:21px;min-width:0;box-shadow:var(--shadow);
+}
+.card + .card{margin-top:17px}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:17px;
+}
+.card-head h2{font-size:14px;margin:0;font-weight:800}
+.text-link{
+  border:0;background:none;color:var(--primary);
+  font-size:11px;font-weight:750;padding:5px;
+}
+.summary-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:14px 0;border-bottom:1px solid var(--border);
+}
+.summary-row:last-child{border-bottom:0;padding-bottom:0}
+.summary-left{display:flex;align-items:center;gap:10px}
+.mini-icon{
+  width:35px;height:35px;border-radius:11px;
+  display:grid;place-items:center;background:#f5f6fb;font-size:16px;
+}
+.summary-name{font-weight:750;font-size:12px}
+.summary-desc{font-size:10px;color:var(--muted);margin-top:4px}
+.summary-amount{font-size:12px;font-weight:800;white-space:nowrap}
+.balance-panel{
+  border-radius:14px;background:#f7f6ff;
+  padding:17px;margin-bottom:12px;
+}
+.balance-panel .big{font-size:26px;font-weight:850;margin-top:8px;letter-spacing:-.7px}
+.balance-panel p{font-size:11px;color:var(--muted);margin:7px 0 0}
+.progress{height:6px;background:#eeeef7;border-radius:10px;overflow:hidden;margin-top:10px}
+.progress div{height:100%;background:var(--primary);border-radius:10px}
+.form-card{max-width:900px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{min-width:0;margin-bottom:15px}
+.field label{display:block;font-size:12px;font-weight:750;margin-bottom:8px}
+.field input,.field select{
+  display:block;width:100%;min-height:44px;
+  padding:12px;border:1px solid #e3e6f0;border-radius:10px;
+  background:#fff;color:var(--text);outline:none;
+}
+.field input:focus,.field select:focus{border-color:var(--primary)}
+.field input::placeholder{color:#adb1c1}
+.form-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:5px}
+.notice{
+  padding:13px;border-radius:11px;background:#f4f3ff;
+  color:#5c52bc;font-size:12px;line-height:1.7;margin-bottom:14px;
+}
+.notice.warning{background:#fff6e8;color:#95651b}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar input,.toolbar select{
+  min-height:41px;border:1px solid #e3e6f0;border-radius:10px;
+  padding:10px 12px;background:#fff;color:var(--text);
+}
+.toolbar input{flex:1;min-width:160px}
+.toolbar select{max-width:190px}
+.table-wrap{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:13px 11px;border-bottom:1px solid var(--border);text-align:left}
+th{font-size:10px;color:var(--muted);font-weight:800;background:#fafbfe;white-space:nowrap}
+td{color:#555c70}
+td strong{color:var(--text)}
+tbody tr:last-child td{border-bottom:0}
+.pill{
+  display:inline-block;border-radius:20px;padding:6px 9px;
+  font-size:10px;font-weight:800;white-space:nowrap;
+}
+.pill.income,.pill.paid{background:var(--green-light);color:var(--green)}
+.pill.expense{background:var(--red-light);color:var(--red)}
+.pill.debt{background:#fff3df;color:#a96c0c}
+.empty{text-align:center!important;color:var(--muted);padding:30px!important}
+.list-mobile{display:none}
+.account-card{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:15px 0;border-bottom:1px solid var(--border);
+}
+.account-card:last-child{border-bottom:0}
+.account-left{display:flex;align-items:center;gap:11px;min-width:0}
+.account-icon{
+  display:grid;place-items:center;width:41px;height:41px;
+  background:#f1efff;border-radius:12px;font-size:19px;flex-shrink:0;
+}
+.account-name{font-weight:800;font-size:12px;overflow-wrap:anywhere}
+.account-sub{font-size:10px;color:var(--muted);margin-top:5px}
+.account-balance{text-align:right;font-size:13px;font-weight:850;white-space:nowrap}
+.action-stack{display:flex;gap:6px;flex-wrap:wrap}
+.hidden{display:none!important}
+footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
+.mobile-nav{display:none}
+@media(max-width:1150px){
+  .main{padding:24px}
+  .sidebar{width:215px}
+  .main{margin-left:215px}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .layout-2{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  body{font-size:14px;padding-bottom:calc(75px + env(safe-area-inset-bottom))}
+  .sidebar{
+    position:relative;top:auto;left:auto;bottom:auto;
+    width:100%;padding:13px 16px 10px;
+    border-right:0;border-bottom:1px solid var(--border);
+  }
+  .brand{padding:0 1px 12px;gap:10px}
+  .brand-icon{width:38px;height:38px;border-radius:12px;font-size:20px}
+  .brand-name{font-size:16px}
+  .brand-sub{font-size:10px;margin-top:3px}
+  .nav-label,.sidebar-bottom{display:none}
+  .nav{
+    display:flex;gap:7px;overflow-x:auto;
+    padding:0 0 3px;scrollbar-width:none;
+  }
+  .nav::-webkit-scrollbar{display:none}
+  .nav-btn{
+    flex:0 0 auto;width:auto;padding:9px 11px;
+    border-radius:10px;font-size:11px;gap:6px;
+  }
+  .nav-btn .nav-icon{font-size:15px;width:auto}
+  .main{margin:0;padding:20px 14px 12px}
+  .topbar{align-items:flex-start;margin-bottom:19px;gap:10px}
+  .topbar h1{font-size:23px;letter-spacing:-.7px;margin-bottom:5px}
+  .today-chip{display:none}
+  .top-actions .btn{padding:11px 12px;font-size:11px;white-space:nowrap}
+  .subtitle{font-size:11px}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:15px}
+  .stat-card{padding:14px;border-radius:14px}
+  .stat-label{font-size:10px}
+  .stat-icon{width:29px;height:29px;font-size:15px;border-radius:9px}
+  .stat-value{font-size:clamp(18px,5vw,23px);margin-top:13px;letter-spacing:-.6px}
+  .stat-foot{font-size:10px;margin-top:6px}
+  .card{padding:16px;border-radius:15px}
+  .card-head{margin-bottom:14px}
+  .card-head h2{font-size:13px}
+  .layout-2{grid-template-columns:1fr;gap:12px}
+  .form-grid{grid-template-columns:1fr;gap:0}
+  .field{margin-bottom:13px}
+  .field input,.field select{min-height:46px;font-size:14px}
+  .btn{min-height:42px}
+  .form-actions .btn{flex:1}
+  .toolbar{gap:8px}
+  .toolbar input{flex-basis:100%;max-width:none}
+  .toolbar select{flex:1;max-width:none}
+  .table-wrap table{min-width:620px}
+  .table-wrap.compact table{min-width:0}
+  .summary-row{padding:12px 0}
+  .summary-name{font-size:11px}
+  .summary-amount{font-size:11px}
+  .balance-panel .big{font-size:24px}
+  .section-heading h2{font-size:15px}
+  .section-heading p{font-size:11px}
+  .mobile-nav{
+    position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+    left:0;right:0;bottom:0;z-index:20;
+    padding:7px 4px calc(7px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.97);
+    border-top:1px solid var(--border);
+    backdrop-filter:blur(12px);
+  }
+  .mobile-nav button{
+    border:0;background:transparent;color:#8b90a4;
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:4px;padding:5px 0;
+    font-size:9px;font-weight:750;min-width:0;
+  }
+  .mobile-nav button span:first-child{font-size:19px;line-height:22px}
+  .mobile-nav button.active{color:var(--primary)}
+  footer{padding:22px 0 10px}
+}
+@media(max-width:360px){
+  .main{padding-left:10px;padding-right:10px}
+  .stat-card{padding:11px}
+  .stat-value{font-size:17px}
+  .nav-btn{padding:9px;font-size:10px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🍫</div>
+      <div>
+      <div class="brand-name">İşletme Yönetimi</div>
+      <div class="brand-sub">Yönetim paneli</div>
+      </div>
+    </div>
+    <div class="nav-label">MENÜ</div>
+    <nav class="nav">
+      <button class="nav-btn active" data-page="dashboard"><span class="nav-icon">⌂</span>Genel Bakış</button>
+      <button class="nav-btn" data-page="transactions"><span class="nav-icon">↕</span>Gelir / Gider</button>
+      <button class="nav-btn" data-page="debts"><span class="nav-icon">▤</span>Borç / Alacak</button>
+      <button class="nav-btn" data-page="accounts"><span class="nav-icon">▣</span>Hesaplar</button>
+      <button class="nav-btn" data-page="backup"><span class="nav-icon">↥</span>Yedekleme</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <strong>🔒 Verilerin güvende</strong>
+      <p>Kayıtların bu tarayıcıda tutulur. Düzenli olarak yedek almayı unutma.</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Genel Bakış</h1>
+        <div class="subtitle" id="today"></div>
+      </div>
+      <div class="top-actions">
+        <div class="today-chip">🍫 Şeker Krizi</div>
+        <button class="btn" onclick="newTransaction()">＋ İşlem Ekle</button>
+      </div>
+    </header>
+
+    <section class="section active" id="dashboard">
+      <div class="cards">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Toplam Bakiye</div><div class="stat-icon">🏦</div></div>
+          <div class="stat-value purple" id="totalBalance">₺0,00</div>
+          <div class="stat-foot">Tüm hesapların toplamı</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Toplam Gelir</div><div class="stat-icon green-bg">↗</div></div>
+          <div class="stat-value green" id="totalIncome">₺0,00</div>
+          <div class="stat-foot">Kaydedilen gelirler</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Toplam Gider</div><div class="stat-icon red-bg">↘</div></div>
+          <div class="stat-value red" id="totalExpense">₺0,00</div>
+          <div class="stat-foot">Kaydedilen giderler</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Net Durum</div><div class="stat-icon">◈</div></div>
+          <div class="stat-value" id="netTotal">₺0,00</div>
+          <div class="stat-foot">Gelir eksi gider</div>
+        </div>
+      </div>
+
+      <div class="layout-2">
+        <div class="card">
+          <div class="card-head">
+            <h2>Son İşlemler</h2>
+            <button class="text-link" onclick="showPage('transactions')">Tümünü gör →</button>
+          </div>
+          <div id="recentList"></div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-head"><h2>Borç ve Alacaklar</h2><span>📒</span></div>
+            <div class="summary-row">
+              <div class="summary-left"><div class="mini-icon">📤</div><div><div class="summary-name">Ödenecek borçlar</div><div class="summary-desc">Kalan borç tutarı</div></div></div>
+              <div class="summary-amount red" id="debtOwed">₺0,00</div>
+            </div>
+            <div class="summary-row">
+              <div class="summary-left"><div class="mini-icon">📥</div><div><div class="summary-name">Alacaklarım</div><div class="summary-desc">Tahsil edilecek tutar</div></div></div>
+              <div class="summary-amount green" id="debtDue">₺0,00</div>
+            </div>
+            <button class="btn secondary full" style="margin-top:15px" onclick="showPage('debts')">Borçları yönet →</button>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Hesaplarım</h2><button class="text-link" onclick="showPage('accounts')">Detaylar →</button></div>
+            <div id="dashboardAccounts"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="transactions">
+      <div class="section-heading">
+        <h2>Gelir ve gider yönetimi</h2>
+        <p>Satışlarını ve masraflarını kolayca kaydet.</p>
+      </div>
+      <div class="layout-2">
+        <div class="card form-card">
+          <div class="card-head"><h2>＋ Yeni işlem</h2></div>
+          <form id="transactionForm">
+            <div class="field"><label for="txType">İşlem türü</label><select id="txType"><option value="income">Gelir</option><option value="expense">Gider</option></select></div>
+            <div class="field"><label for="txDesc">Açıklama</label><input id="txDesc" placeholder="Örn. Waffle satışı, malzeme alımı" required maxlength="120"></div>
+            <div class="form-grid">
+              <div class="field"><label for="txAmount">Tutar (₺)</label><input id="txAmount" type="number" min="0.01" step="0.01" placeholder="0,00" required></div>
+              <div class="field"><label for="txDate">Tarih</label><input id="txDate" type="date" required></div>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label for="txCategory">Kategori</label><select id="txCategory"><option>Satış</option><option>Malzeme</option><option>Kira</option><option>Fatura</option><option>Maaş</option><option>Ulaşım</option><option>Diğer</option></select></div>
+              <div class="field"><label for="txAccount">Hesap</label><select id="txAccount"></select></div>
+            </div>
+            <div class="form-actions"><button class="btn" type="submit">✓ İşlemi kaydet</button><button class="btn light" type="reset">Temizle</button></div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>İşlem özeti</h2></div>
+          <div class="notice">Gelir seçtiğin hesaba eklenir. Gider seçtiğin hesaptan düşülür.</div>
+          <div class="summary-row"><div class="summary-name">Kayıtlı işlem sayısı</div><div class="summary-amount purple" id="txCount">0</div></div>
+          <div class="summary-row"><div class="summary-name">Toplam gelir</div><div class="summary-amount green" id="txIncomeMini">₺0,00</div></div>
+          <div class="summary-row"><div class="summary-name">Toplam gider</div><div class="summary-amount red" id="txExpenseMini">₺0,00</div></div>
+          <p class="subtitle" style="margin-top:14px">Yanlış kayıtları işlem geçmişinden silebilirsin.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>İşlem geçmişi</h2></div>
+        <div class="toolbar"><input id="txSearch" placeholder="🔎 Açıklama veya kategori ara..." aria-label="İşlem ara"><select id="txFilter" aria-label="İşlem türü"><option value="all">Tüm işlemler</option><option value="income">Gelirler</option><option value="expense">Giderler</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Açıklama</th><th>Kategori</th><th>Hesap</th><th>Tür</th><th>Tutar</th><th>İşlem</th></tr></thead><tbody id="txRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="section" id="debts">
+      <div class="section-heading"><h2>Borç ve alacak yönetimi</h2><p>Kimden alacağın olduğunu veya kime ödeme yapacağını takip et.</p></div>
+      <div class="layout-2">
+        <div class="card">
+          <div class="card-head"><h2>＋ Yeni borç / alacak</h2></div>
+          <form id="debtForm">
+            <div class="field"><label for="debtType">Kayıt türü</label><select id="debtType"><option value="owed">Benim ödeyeceğim borç</option><option value="due">Bana ödenecek alacak</option></select></div>
+            <div class="field"><label for="debtName">Kişi / firma</label><input id="debtName" required maxlength="100" placeholder="Kişi veya firma adı"></div>
+            <div class="field"><label for="debtDesc">Açıklama</label><input id="debtDesc" maxlength="120" placeholder="Örn. Malzeme borcu"></div>
+            <div class="form-grid">
+              <div class="field"><label for="debtAmount">Toplam tutar (₺)</label><input id="debtAmount" type="number" min="0.01" step="0.01" required></div>
+              <div class="field"><label for="debtDate">Vade tarihi</label><input id="debtDate" type="date"></div>
+            </div>
+            <button class="btn" type="submit">Kaydı ekle</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>₺ Ödeme / tahsilat</h2></div>
+          <form id="paymentForm">
+            <div class="field"><label for="paymentDebt">Açık kayıt</label><select id="paymentDebt" required></select></div>
+            <div class="field"><label for="paymentAmount">Ödeme tutarı (₺)</label><input id="paymentAmount" type="number" min="0.01" step="0.01" required placeholder="0,00"></div>
+            <div class="form-grid">
+              <div class="field"><label for="paymentDate">İşlem tarihi</label><input id="paymentDate" type="date" required></div>
+              <div class="field"><label for="paymentAccount">Hesap</label><select id="paymentAccount"></select></div>
+            </div>
+            <button class="btn" type="submit">Ödemeyi kaydet</button>
+          </form>
+          <p class="subtitle" style="margin-top:14px">Ödeme kaydı kalan borcu ve hesap bakiyesini günceller.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>📒 Borç / alacak listesi</h2></div>
+        <div class="table-wrap"><table><thead><tr><th>Kişi / firma</th><th>Tür</th><th>Açıklama</th><th>Toplam</th><th>Ödenen</th><th>Kalan</th><th>Vade</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="debtRows"></tbody></table></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>Ödeme geçmişi</h2></div>
+        <div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Kişi / firma</th><th>Tür</th><th>Tutar</th><th>Hesap</th></tr></thead><tbody id="paymentRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="section" id="accounts">
+      <div class="section-heading"><h2>Hesaplarım</h2><p>Kasa, banka ve diğer hesaplarının bakiyelerini tek yerde gör.</p></div>
+      <div class="layout-2">
+        <div class="card">
+          <div class="card-head"><h2>＋ Yeni hesap oluştur</h2></div>
+          <form id="accountForm">
+            <div class="field"><label for="accountName">Hesap adı</label><input id="accountName" required maxlength="50" placeholder="Örn. Nakit kasa"></div>
+            <div class="field"><label for="accountOpening">Başlangıç bakiyesi (₺)</label><input id="accountOpening" type="number" min="0" step="0.01" value="0" required></div>
+            <button class="btn" type="submit">Hesap oluştur</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Toplam bakiye</h2><span>🏦</span></div>
+          <div class="balance-panel"><div class="stat-label">Tüm hesapların toplamı</div><div class="big purple" id="accountsTotal">₺0,00</div><p id="accountsSummary">0 hesap kayıtlı</p></div>
+          <div class="notice">Hesap silmek için o hesapta bağlı işlem veya ödeme bulunmamalıdır.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>Hesap bakiyeleri</h2></div>
+        <div class="table-wrap"><table><thead><tr><th>Hesap</th><th>Başlangıç bakiyesi</th><th>Güncel bakiye</th><th>İşlem</th></tr></thead><tbody id="accountRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="section" id="backup">
+      <div class="section-heading"><h2>Yedekleme ve veri güvenliği</h2><p>Kayıtlarını kaybetmemek için yedek dosyası oluştur.</p></div>
+      <div class="layout-2">
+        <div class="card">
+          <div class="card-head"><h2>💾 Verileri yedekle</h2></div>
+          <p class="subtitle">Gelirleri, giderleri, hesapları, borçları ve ödeme geçmişini JSON dosyası olarak indir.</p>
+          <button class="btn full" onclick="exportData()">⬇ Yedeği indir</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>↥ Yedeği geri yükle</h2></div>
+          <p class="subtitle">Önceden indirdiğin yedek dosyasını seç. Yükleme mevcut kayıtların yerine geçer.</p>
+          <div class="field" style="margin-top:15px"><label for="importFile">Yedek dosyası (.json)</label><input type="file" id="importFile" accept=".json,application/json"></div>
+          <button class="btn secondary full" onclick="importData()">Yedeği yükle</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>🔒 Verilerin hakkında</h2></div>
+        <div class="notice warning">Bu uygulama kayıtlarını kullandığın tarayıcıda saklar. Site verileri temizlenirse veya başka cihaz kullanırsan kayıtların otomatik gelmeyebilir. Düzenli yedek al.</div>
+        <p class="subtitle">Bu sürümde bulut senkronizasyonu yoktur. Yedek dosyanı güvenli bir yerde sakla.</p>
+        <button class="btn danger" onclick="clearData()">Tüm verileri sil</button>
+      </div>
+    </section>
+
+    <footer>Şeker Krizi · İşletme Yönetimi</footer>
+  </main>
+</div>
+
+<nav class="mobile-nav" aria-label="Alt menü">
+  <button class="active" data-page="dashboard"><span>⌂</span><span>Özet</span></button>
+  <button data-page="transactions"><span>↕</span><span>İşlemler</span></button>
+  <button data-page="debts"><span>▤</span><span>Borçlar</span></button>
+  <button data-page="accounts"><span>▣</span><span>Hesaplar</span></button>
+  <button data-page="backup"><span>⚙</span><span>Diğer</span></button>
+</nav>
+
+<script>
+"use strict";
+
+const STORAGE_KEY = "sekerKriziYonetim_v1";
+
+const defaultData = () => ({
+  accounts:[
+    {id:"cash",name:"Kasa",opening:0},
+    {id:"bank",name:"Banka",opening:0}
+  ],
+  transactions:[],
+  debts:[],
+  payments:[]
+});
+
+let data = loadData();
+
+function uid(){
+  return Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+}
+function loadData(){
+  try{
+    const saved=localStorage.getItem(STORAGE_KEY);
+    if(!saved)return defaultData();
+    const d=JSON.parse(saved);
+    if(!d || !Array.isArray(d.accounts) || !Array.isArray(d.transactions) ||
+       !Array.isArray(d.debts) || !Array.isArray(d.payments)) return defaultData();
+    return d;
+  }catch(e){return defaultData();}
+}
+function save(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    renderAll();
+  }catch(e){
+    alert("Veriler kaydedilemedi. Tarayıcı depolama alanını kontrol et.");
+  }
+}
+function money(n){
+  return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(Number(n)||0);
+}
+function safe(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function today(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function formatDate(value){
+  if(!value)return "—";
+  const parts=String(value).split("-");
+  return parts.length===3?`${parts[2]}.${parts[1]}.${parts[0]}`:value;
+}
+function accountName(id){
+  return data.accounts.find(a=>a.id===id)?.name || "Silinmiş hesap";
+}
+function balance(id){
+  const a=data.accounts.find(x=>x.id===id);
+  if(!a)return 0;
+  let total=Number(a.opening)||0;
+  data.transactions.filter(t=>t.accountId===id).forEach(t=>{
+    total+=t.type==="income"?Number(t.amount):-Number(t.amount);
+  });
+  data.payments.filter(p=>p.accountId===id).forEach(p=>{
+    const debt=data.debts.find(d=>d.id===p.debtId);
+    if(!debt)return;
+    total+=debt.type==="due"?Number(p.amount):-Number(p.amount);
+  });
+  return total;
+}
+function totals(){
+  const income=data.transactions.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0);
+  const expense=data.transactions.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0);
+  const balanceAll=data.accounts.reduce((s,a)=>s+balance(a.id),0);
+  const owed=data.debts.filter(d=>d.type==="owed").reduce((s,d)=>s+Math.max(0,d.amount-d.paid),0);
+  const due=data.debts.filter(d=>d.type==="due").reduce((s,d)=>s+Math.max(0,d.amount-d.paid),0);
+  return {income,expense,balanceAll,net:income-expense,owed,due};
+}
+
+function showPage(id){
+  const valid=["dashboard","transactions","debts","accounts","backup"];
+  if(!valid.includes(id))id="dashboard";
+  document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id===id));
+  document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+  const titles={
+    dashboard:"Genel Bakış",
+    transactions:"Gelir / Gider",
+    debts:"Borç / Alacak",
+    accounts:"Hesaplarım",
+    backup:"Yedekleme"
+  };
+  document.getElementById("pageTitle").textContent=titles[id];
+  if(id==="transactions")document.getElementById("txDate").value ||= today();
+  if(id==="debts")document.getElementById("paymentDate").value ||= today();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-page]").forEach(b=>{
+  b.addEventListener("click",()=>showPage(b.dataset.page));
+});
+function newTransaction(){
+  showPage("transactions");
+  setTimeout(()=>document.getElementById("txDesc").focus({preventScroll:true}),100);
+}
+
+function renderAccountOptions(){
+  ["txAccount","paymentAccount"].forEach(id=>{
+    const el=document.getElementById(id);
+    const old=el.value;
+    const options=data.accounts.map(a=>
+      `<option value="${safe(a.id)}">${safe(a.name)}</option>`
+    ).join("");
+    el.innerHTML=options||'<option value="">Önce hesap ekle</option>';
+    if(data.accounts.some(a=>a.id===old))el.value=old;
+    el.disabled=!data.accounts.length;
+  });
+}
+function renderDashboard(){
+  const t=totals();
+  document.getElementById("totalBalance").textContent=money(t.balanceAll);
+  document.getElementById("totalIncome").textContent=money(t.income);
+  document.getElementById("totalExpense").textContent=money(t.expense);
+  const net=document.getElementById("netTotal");
+  net.textContent=money(t.net);
+  net.className="stat-value "+(t.net>=0?"green":"red");
+  document.getElementById("debtOwed").textContent=money(t.owed);
+  document.getElementById("debtDue").textContent=money(t.due);
+
+  const recent=[...data.transactions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+  document.getElementById("recentList").innerHTML=recent.length?recent.map(t=>`
+    <div class="summary-row">
+      <div class="summary-left">
+        <div class="mini-icon">${t.type==="income"?"↗":"↘"}</div>
+        <div><div class="summary-name">${safe(t.desc)}</div>
+        <div class="summary-desc">${safe(formatDate(t.date))} · ${safe(t.category)}</div></div>
+      </div>
+      <div class="summary-amount ${t.type==="income"?"green":"red"}">${t.type==="income"?"+":"−"}${money(t.amount)}</div>
+    </div>`).join(""):'<div class="empty">Henüz işlem yok. İlk kaydını ekleyebilirsin.</div>';
+
+  document.getElementById("dashboardAccounts").innerHTML=data.accounts.map(a=>`
+    <div class="account-card">
+      <div class="account-left"><div class="account-icon">🏦</div>
+        <div><div class="account-name">${safe(a.name)}</div><div class="account-sub">Hesap bakiyesi</div></div>
+      </div>
+      <div class="account-balance ${balance(a.id)>=0?"green":"red"}">${money(balance(a.id))}</div>
+    </div>`).join("");
+}
+function renderTransactions(){
+  const q=(document.getElementById("txSearch").value||"").toLocaleLowerCase("tr-TR");
+  const filter=document.getElementById("txFilter").value;
+  const rows=[...data.transactions].filter(t=>
+    (filter==="all"||t.type===filter)&&
+    (`${t.desc} ${t.category}`).toLocaleLowerCase("tr-TR").includes(q)
+  ).sort((a,b)=>b.date.localeCompare(a.date));
+  const t=totals();
+  document.getElementById("txCount").textContent=data.transactions.length;
+  document.getElementById("txIncomeMini").textContent=money(t.income);
+  document.getElementById("txExpenseMini").textContent=money(t.expense);
+  document.getElementById("txRows").innerHTML=rows.length?rows.map(t=>`
+    <tr>
+      <td>${safe(formatDate(t.date))}</td><td><strong>${safe(t.desc)}</strong></td>
+      <td>${safe(t.category)}</td><td>${safe(accountName(t.accountId))}</td>
+      <td><span class="pill ${t.type}">${t.type==="income"?"Gelir":"Gider"}</span></td>
+      <td class="${t.type==="income"?"green":"red"}">${t.type==="income"?"+":"−"}${money(t.amount)}</td>
+      <td><button class="btn small danger" onclick="deleteTransaction('${safe(t.id)}')">Sil</button></td>
+    </tr>`).join(""):'<tr><td colspan="7" class="empty">İşlem bulunamadı.</td></tr>';
+}
+document.getElementById("txSearch").addEventListener("input",renderTransactions);
+document.getElementById("txFilter").addEventListener("change",renderTransactions);
+
+function renderDebts(){
+  const open=data.debts.filter(d=>Number(d.amount)>Number(d.paid));
+  const paymentSelect=document.getElementById("paymentDebt");
+  const old=paymentSelect.value;
+  paymentSelect.innerHTML=open.map(d=>
+    `<option value="${safe(d.id)}">${safe(d.name)} · ${d.type==="owed"?"Borç":"Alacak"} · Kalan ${money(d.amount-d.paid)}</option>`
+  ).join("")||'<option value="">Açık borç/alacak yok</option>';
+  if(open.some(d=>d.id===old))paymentSelect.value=old;
+  paymentSelect.disabled=!open.length;
+
+  const sorted=[...data.debts].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  document.getElementById("debtRows").innerHTML=sorted.length?sorted.map(d=>{
+    const remaining=Math.max(0,d.amount-d.paid);
+    const paid=remaining<=0.001;
+    const progress=Math.min(100,d.amount?d.paid/d.amount*100:0);
+    return `<tr>
+      <td><strong>${safe(d.name)}</strong></td>
+      <td><span class="pill debt">${d.type==="owed"?"Borç":"Alacak"}</span></td>
+      <td>${safe(d.desc||"—")}</td><td>${money(d.amount)}</td><td>${money(d.paid)}</td>
+      <td>${money(remaining)}</td><td>${safe(formatDate(d.date))}</td>
+      <td><span class="pill ${paid?"paid":"debt"}">${paid?"Kapandı":"Açık"}</span>
+      <div class="progress"><div style="width:${progress}%"></div></div></td>
+      <td><button class="btn small danger" onclick="deleteDebt('${safe(d.id)}')">Sil</button></td>
+    </tr>`;
+  }).join(""):'<tr><td colspan="9" class="empty">Henüz borç veya alacak kaydı yok.</td></tr>';
+
+  const payments=[...data.payments].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById("paymentRows").innerHTML=payments.length?payments.map(p=>{
+    const d=data.debts.find(x=>x.id===p.debtId);
+    return `<tr><td>${safe(formatDate(p.date))}</td><td>${safe(d?.name||"Silinmiş kayıt")}</td>
+      <td>${d?.type==="due"?"Alacak tahsilatı":"Borç ödemesi"}</td>
+      <td>${money(p.amount)}</td><td>${safe(accountName(p.accountId))}</td></tr>`;
+  }).join(""):'<tr><td colspan="5" class="empty">Henüz ödeme kaydı yok.</td></tr>';
+}
+function renderAccounts(){
+  const t=totals();
+  document.getElementById("accountsTotal").textContent=money(t.balanceAll);
+  document.getElementById("accountsSummary").textContent=`${data.accounts.length} hesap kayıtlı`;
+  document.getElementById("accountRows").innerHTML=data.accounts.map(a=>`
+    <tr><td><strong>${safe(a.name)}</strong></td><td>${money(a.opening)}</td>
+      <td class="${balance(a.id)>=0?"green":"red"}">${money(balance(a.id))}</td>
+      <td><button class="btn small danger" onclick="deleteAccount('${safe(a.id)}')">Sil</button></td></tr>
+  `).join("")||'<tr><td colspan="4" class="empty">Henüz hesap yok.</td></tr>';
+}
+function renderAll(){
+  renderAccountOptions();
+  renderDashboard();
+  renderTransactions();
+  renderDebts();
+  renderAccounts();
+}
+
+document.getElementById("transactionForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const amount=Math.round(Number(document.getElementById("txAmount").value)*100)/100;
+  const accountId=document.getElementById("txAccount").value;
+  const desc=document.getElementById("txDesc").value.trim();
+  if(!desc)return alert("İşlem açıklaması gir.");
+  if(!Number.isFinite(amount)||amount<=0)return alert("Geçerli bir tutar gir.");
+  if(!data.accounts.some(a=>a.id===accountId))return alert("Önce bir hesap oluştur.");
+  data.transactions.push({
+    id:uid(),type:document.getElementById("txType").value,desc,amount,
+    date:document.getElementById("txDate").value||today(),
+    category:document.getElementById("txCategory").value,accountId
+  });
+  e.target.reset();
+  document.getElementById("txDate").value=today();
+  save();
+  alert("İşlem kaydedildi.");
+});
+function deleteTransaction(id){
+  if(!confirm("Bu işlem silinsin mi? Hesap bakiyesi yeniden hesaplanacak."))return;
+  data.transactions=data.transactions.filter(t=>t.id!==id);
+  save();
+}
+
+document.getElementById("debtForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const amount=Math.round(Number(document.getElementById("debtAmount").value)*100)/100;
+  const name=document.getElementById("debtName").value.trim();
+  if(!name)return alert("Kişi veya firma adı gir.");
+  if(!Number.isFinite(amount)||amount<=0)return alert("Geçerli bir tutar gir.");
+  data.debts.push({
+    id:uid(),type:document.getElementById("debtType").value,name,
+    desc:document.getElementById("debtDesc").value.trim(),
+    amount,paid:0,date:document.getElementById("debtDate").value
+  });
+  e.target.reset();
+  save();
+  alert("Borç / alacak kaydı eklendi.");
+});
+
+document.getElementById("paymentForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const debt=data.debts.find(d=>d.id===document.getElementById("paymentDebt").value);
+  const amount=Math.round(Number(document.getElementById("paymentAmount").value)*100)/100;
+  const accountId=document.getElementById("paymentAccount").value;
+  if(!debt)return alert("Önce açık bir borç/alacak kaydı ekle.");
+  if(!Number.isFinite(amount)||amount<=0)return alert("Geçerli bir ödeme tutarı gir.");
+  const remaining=Math.round((debt.amount-debt.paid)*100)/100;
+  if(amount>remaining)return alert("Ödeme tutarı kalan borç/alacaktan fazla olamaz.");
+  if(!data.accounts.some(a=>a.id===accountId))return alert("Önce bir hesap oluştur.");
+  if(debt.type==="owed"&&balance(accountId)<amount){
+    if(!confirm("Seçilen hesabın bakiyesi bu ödemeden sonra eksiye düşecek. Devam edilsin mi?"))return;
+  }
+  debt.paid=Math.round((debt.paid+amount)*100)/100;
+  data.payments.push({
+    id:uid(),debtId:debt.id,amount,
+    date:document.getElementById("paymentDate").value||today(),accountId
+  });
+  e.target.reset();
+  document.getElementById("paymentDate").value=today();
+  save();
+  alert("Ödeme kaydedildi.");
+});
+function deleteDebt(id){
+  if(!confirm("Bu kayıt ve ona bağlı ödeme geçmişi silinsin mi?"))return;
+  data.debts=data.debts.filter(d=>d.id!==id);
+  data.payments=data.payments.filter(p=>p.debtId!==id);
+  save();
+}
+
+document.getElementById("accountForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const name=document.getElementById("accountName").value.trim();
+  const opening=Math.round(Number(document.getElementById("accountOpening").value)*100)/100;
+  if(!name)return alert("Hesap adı gir.");
+  if(!Number.isFinite(opening)||opening<0)return alert("Geçerli bir başlangıç bakiyesi gir.");
+  if(data.accounts.some(a=>a.name.toLocaleLowerCase("tr-TR")===name.toLocaleLowerCase("tr-TR")))return alert("Bu hesap adı zaten var.");
+  data.accounts.push({id:uid(),name,opening});
+  e.target.reset();
+  document.getElementById("accountOpening").value="0";
+  save();
+  alert("Hesap oluşturuldu.");
+});
+function deleteAccount(id){
+  const account=data.accounts.find(a=>a.id===id);
+  if(!account)return;
+  const used=data.transactions.some(t=>t.accountId===id)||data.payments.some(p=>p.accountId===id);
+  if(used)return alert("Bu hesapta işlem geçmişi var. Önce ilgili kayıtları sil.");
+  if(data.accounts.length===1)return alert("En az bir hesap kalmalı.");
+  if(!confirm(`"${account.name}" hesabı silinsin mi?`))return;
+  data.accounts=data.accounts.filter(a=>a.id!==id);
+  save();
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({
+    version:1,exportedAt:new Date().toISOString(),data
+  },null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="seker-krizi-yedek-"+today()+".json";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function importData(){
+  const file=document.getElementById("importFile").files[0];
+  if(!file)return alert("Önce bir JSON yedek dosyası seç.");
+  if(!confirm("Yedek yüklendiğinde mevcut verilerin yerine geçecek. Devam edilsin mi?"))return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(reader.result);
+      const d=parsed.data||parsed;
+      if(!d||!Array.isArray(d.accounts)||!Array.isArray(d.transactions)||
+         !Array.isArray(d.debts)||!Array.isArray(d.payments))throw new Error("invalid");
+      for(const a of d.accounts){
+        if(!a.id||typeof a.name!=="string"||!Number.isFinite(Number(a.opening)))throw new Error("invalid account");
+      }
+      for(const t of d.transactions){
+        if(!t.id||!["income","expense"].includes(t.type)||!Number.isFinite(Number(t.amount))||Number(t.amount)<=0)throw new Error("invalid transaction");
+      }
+      for(const debt of d.debts){
+        if(!debt.id||!["owed","due"].includes(debt.type)||!Number.isFinite(Number(debt.amount))||Number(debt.amount)<=0||!Number.isFinite(Number(debt.paid))||Number(debt.paid)<0||Number(debt.paid)>Number(debt.amount))throw new Error("invalid debt");
+      }
+      for(const p of d.payments){
+        if(!p.id||!d.debts.some(debt=>debt.id===p.debtId)||!Number.isFinite(Number(p.amount))||Number(p.amount)<=0)throw new Error("invalid payment");
+      }
+      data={
+        accounts:d.accounts,
+        transactions:d.transactions,
+        debts:d.debts,
+        payments:d.payments
+      };
+      save();
+      alert("Yedek başarıyla yüklendi.");
+      document.getElementById("importFile").value="";
+    }catch(err){
+      alert("Dosya geçerli bir Şeker Krizi yedeği değil veya içeriği hatalı.");
+    }
+  };
+  reader.readAsText(file);
+}
+function clearData(){
+  if(!confirm("Tüm işlemler, borçlar, ödemeler ve hesaplar silinecek. Önce yedek aldın mı?"))return;
+  if(!confirm("Son kez soruyorum: Bütün kayıtları silmek istiyor musun?"))return;
+  data=defaultData();
+  save();
+  alert("Veriler temizlendi.");
+}
+
+document.getElementById("today").textContent=new Date().toLocaleDateString("tr-TR",{
+  weekday:"long",year:"numeric",month:"long",day:"numeric"
+});
+document.getElementById("txDate").value=today();
+document.getElementById("paymentDate").value=today();
+renderAll();
+</script>
+</body>
+</html>
