@@ -1,4 +1,3 @@
- 
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -83,7 +82,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   padding:14px;background:#fafaff;
 }
 .sidebar-bottom strong{font-size:12px}
-.sidebar-bottom p{font-size:11px;color:var(--muted);line-height:1.6;margin:7px 0 0}
+.sidebar-bottom p{font-size:11px;color:var(--muted);line-height:1.6;margin:7px 0 0;overflow-wrap:anywhere}
 .main{
   margin-left:245px;
   padding:29px 34px 35px;
@@ -235,6 +234,27 @@ tbody tr:last-child td{border-bottom:0}
 .hidden{display:none!important}
 footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
 .mobile-nav{display:none}
+
+/* Giriş ekranı */
+.auth-overlay{
+  position:fixed;inset:0;z-index:100;background:var(--bg);
+  display:grid;place-items:center;padding:20px;overflow-y:auto;
+}
+.auth-box{
+  width:100%;max-width:380px;background:#fff;
+  border:1px solid var(--border);border-radius:17px;
+  padding:26px;box-shadow:var(--shadow);
+}
+.auth-brand{
+  width:50px;height:50px;border-radius:15px;display:grid;place-items:center;
+  background:var(--primary-light);font-size:26px;margin-bottom:14px;
+}
+.auth-box h1{font-size:21px;margin:0 0 6px;letter-spacing:-.5px}
+.auth-msg{font-size:12px;min-height:18px;margin:2px 0 12px;line-height:1.5;overflow-wrap:anywhere}
+.auth-msg.err{color:var(--red)}
+.auth-msg.ok{color:var(--green)}
+.sync-chip{font-size:10px;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
+
 @media(max-width:1150px){
   .main{padding:24px}
   .sidebar{width:215px}
@@ -323,6 +343,22 @@ footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
 </style>
 </head>
 <body>
+
+<!-- Giriş / Kayıt ekranı -->
+<div class="auth-overlay" id="authOverlay">
+  <form class="auth-box" id="authForm" novalidate>
+    <div class="auth-brand">🍫</div>
+    <h1 id="authTitle">Giriş yap</h1>
+    <p class="subtitle" id="authSub" style="margin-bottom:18px">Kayıtların hesabına bağlı tutulur. Telefon ve bilgisayardan aynı verilere ulaşırsın.</p>
+    <div class="field"><label for="authEmail">E-posta</label><input id="authEmail" type="email" autocomplete="email" inputmode="email" placeholder="ornek@mail.com" required></div>
+    <div class="field"><label for="authPass">Şifre</label><input id="authPass" type="password" minlength="6" autocomplete="current-password" placeholder="En az 6 karakter" required></div>
+    <div class="auth-msg" id="authMsg" role="status"></div>
+    <button class="btn full" type="submit" id="authSubmit">Giriş yap</button>
+    <button class="btn light full" type="button" id="authToggle" style="margin-top:8px">Hesabın yok mu? Kayıt ol</button>
+    <button class="text-link" type="button" id="authReset" style="margin-top:10px;width:100%">Şifremi unuttum</button>
+  </form>
+</div>
+
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
@@ -341,8 +377,9 @@ footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
       <button class="nav-btn" data-page="backup"><span class="nav-icon">↥</span>Yedekleme</button>
     </nav>
     <div class="sidebar-bottom">
-      <strong>🔒 Verilerin güvende</strong>
-      <p>Kayıtların bu tarayıcıda tutulur. Düzenli olarak yedek almayı unutma.</p>
+      <strong>☁️ Verilerin güvende</strong>
+      <p>Kayıtların hesabına bağlı olarak bulutta tutulur.</p>
+      <p id="sidebarUser" style="margin-top:4px"></p>
     </div>
   </aside>
 
@@ -513,7 +550,7 @@ footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
     </section>
 
     <section class="section" id="backup">
-      <div class="section-heading"><h2>Yedekleme ve veri güvenliği</h2><p>Kayıtlarını kaybetmemek için yedek dosyası oluştur.</p></div>
+      <div class="section-heading"><h2>Yedekleme ve veri güvenliği</h2><p>Ek güvenlik için yedek dosyası oluşturabilirsin.</p></div>
       <div class="layout-2">
         <div class="card">
           <div class="card-head"><h2>💾 Verileri yedekle</h2></div>
@@ -528,10 +565,13 @@ footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
         </div>
       </div>
       <div class="card" style="margin-top:16px">
-        <div class="card-head"><h2>🔒 Verilerin hakkında</h2></div>
-        <div class="notice warning">Bu uygulama kayıtlarını kullandığın tarayıcıda saklar. Site verileri temizlenirse veya başka cihaz kullanırsan kayıtların otomatik gelmeyebilir. Düzenli yedek al.</div>
-        <p class="subtitle">Bu sürümde bulut senkronizasyonu yoktur. Yedek dosyanı güvenli bir yerde sakla.</p>
-        <button class="btn danger" onclick="clearData()">Tüm verileri sil</button>
+        <div class="card-head"><h2>☁️ Hesap ve veriler</h2></div>
+        <div class="notice">Kayıtların hesabına bağlı olarak bulutta saklanır. Aynı e-posta ile giriş yaptığın her cihazda aynı verileri görürsün. Yine de ara sıra yedek indirmen önerilir.</div>
+        <p class="subtitle" id="accountInfo">Giriş yapılmadı.</p>
+        <div class="form-actions" style="margin-top:12px">
+          <button class="btn light" onclick="cloudLogoutClick()">Çıkış yap</button>
+          <button class="btn danger" onclick="clearData()">Tüm verileri sil</button>
+        </div>
       </div>
     </section>
 
@@ -550,6 +590,7 @@ footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
 <script>
 "use strict";
 
+// Eski sürümde bu tarayıcıda tutulan verilerin anahtarı (ilk girişte buluta taşınır)
 const STORAGE_KEY = "sekerKriziYonetim_v1";
 
 const defaultData = () => ({
@@ -562,28 +603,31 @@ const defaultData = () => ({
   payments:[]
 });
 
-let data = loadData();
+let data = defaultData();
+
+function setData(d){
+  data = d;
+  renderAll();
+}
+function isValidData(d){
+  return d && Array.isArray(d.accounts) && Array.isArray(d.transactions) &&
+         Array.isArray(d.debts) && Array.isArray(d.payments);
+}
 
 function uid(){
   return Date.now().toString(36)+Math.random().toString(36).slice(2,9);
 }
-function loadData(){
+function loadLocalData(){
   try{
     const saved=localStorage.getItem(STORAGE_KEY);
-    if(!saved)return defaultData();
+    if(!saved)return null;
     const d=JSON.parse(saved);
-    if(!d || !Array.isArray(d.accounts) || !Array.isArray(d.transactions) ||
-       !Array.isArray(d.debts) || !Array.isArray(d.payments)) return defaultData();
-    return d;
-  }catch(e){return defaultData();}
+    return isValidData(d)?d:null;
+  }catch(e){return null;}
 }
 function save(){
-  try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
-    renderAll();
-  }catch(e){
-    alert("Veriler kaydedilemedi. Tarayıcı depolama alanını kontrol et.");
-  }
+  renderAll();
+  if(window.cloudSave) window.cloudSave(data);
 }
 function money(n){
   return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(Number(n)||0);
@@ -883,8 +927,7 @@ function importData(){
     try{
       const parsed=JSON.parse(reader.result);
       const d=parsed.data||parsed;
-      if(!d||!Array.isArray(d.accounts)||!Array.isArray(d.transactions)||
-         !Array.isArray(d.debts)||!Array.isArray(d.payments))throw new Error("invalid");
+      if(!isValidData(d))throw new Error("invalid");
       for(const a of d.accounts){
         if(!a.id||typeof a.name!=="string"||!Number.isFinite(Number(a.opening)))throw new Error("invalid account");
       }
@@ -919,6 +962,9 @@ function clearData(){
   save();
   alert("Veriler temizlendi.");
 }
+function cloudLogoutClick(){
+  if(window.cloudLogout)window.cloudLogout();
+}
 
 document.getElementById("today").textContent=new Date().toLocaleDateString("tr-TR",{
   weekday:"long",year:"numeric",month:"long",day:"numeric"
@@ -926,6 +972,226 @@ document.getElementById("today").textContent=new Date().toLocaleDateString("tr-T
 document.getElementById("txDate").value=today();
 document.getElementById("paymentDate").value=today();
 renderAll();
+</script>
+
+<!-- Firebase: giriş + bulut senkronizasyonu -->
+<script>
+(function(){
+"use strict";
+
+/* ====== FIREBASE BİLGİLERİ ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDnV75luhq6svZdOJrteJE4rlXY7wI5dHk",
+  authDomain: "seker-krizi.firebaseapp.com",
+  projectId: "seker-krizi",
+  storageBucket: "seker-krizi.firebasestorage.app",
+  messagingSenderId: "138516236402",
+  appId: "1:138516236402:web:093da9df307c748bd09aeb"
+};
+/* ================================ */
+
+const overlay=document.getElementById("authOverlay");
+const msgEl=document.getElementById("authMsg");
+const submitBtn=document.getElementById("authSubmit");
+const emailEl=document.getElementById("authEmail");
+const passEl=document.getElementById("authPass");
+
+function showMsg(text,type){
+  msgEl.textContent=text||"";
+  msgEl.className="auth-msg"+(type?" "+type:"");
+}
+
+const configured=!Object.values(firebaseConfig).some(v=>String(v).startsWith("BURAYA"));
+const MSG_FAIL="Firebase yüklenemedi. İnternetini, VPN veya reklam engelleyiciyi kontrol et ve siteyi GitHub Pages adresinden (https://...) aç. Claude önizlemesinde veya dosyadan açınca çalışmaz.";
+const MSG_CONFIG="Kurulum eksik: koddaki firebaseConfig alanına Firebase bilgilerini yazman gerekiyor.";
+
+let registerMode=false,unsub=null,ref=null;
+
+const messages={
+  "auth/invalid-credential":"E-posta veya şifre hatalı. Hesabın yoksa önce kayıt ol.",
+  "auth/wrong-password":"E-posta veya şifre hatalı.",
+  "auth/user-not-found":"Bu e-posta ile hesap bulunamadı. Önce kayıt ol.",
+  "auth/email-already-in-use":"Bu e-posta zaten kayıtlı. Giriş yapmayı dene.",
+  "auth/weak-password":"Şifre en az 6 karakter olmalı.",
+  "auth/invalid-email":"Geçerli bir e-posta adresi gir.",
+  "auth/missing-email":"E-posta adresini gir.",
+  "auth/too-many-requests":"Çok fazla deneme yapıldı. Biraz bekleyip tekrar dene.",
+  "auth/network-request-failed":"İnternet bağlantını kontrol et.",
+  "auth/operation-not-allowed":"Firebase'de E-posta/Şifre girişi açık değil (Authentication → Sign-in method).",
+  "auth/api-key-not-valid.-please-pass-a-valid-api-key.":"apiKey hatalı. firebaseConfig değerlerini kontrol et.",
+  "auth/invalid-api-key":"apiKey hatalı. firebaseConfig değerlerini kontrol et.",
+  "auth/unauthorized-domain":"Bu site adresi Firebase'de yetkili alan adlarına eklenmemiş (Authentication → Settings → Authorized domains)."
+};
+const errText=e=>messages[e&&e.code]||("Bir hata oluştu: "+((e&&(e.code||e.message))||"bilinmiyor"));
+
+// Firebase dosyalarını yükle: sırayla 3 farklı kaynaktan dener (biri engelliyse diğerine geçer)
+function buildEsm(A,Au,F){
+  const app=A.initializeApp(firebaseConfig);
+  return {auth:Au.getAuth(app),db:F.getFirestore(app),Au,F};
+}
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const el=document.createElement("script");
+    el.src=src;el.onload=res;el.onerror=()=>rej(new Error("script yüklenemedi: "+src));
+    document.head.appendChild(el);
+  });
+}
+async function viaGstatic(){
+  const b="https://www.gstatic.com/firebasejs/10.12.2/";
+  const [A,Au,F]=await Promise.all([import(b+"firebase-app.js"),import(b+"firebase-auth.js"),import(b+"firebase-firestore.js")]);
+  return buildEsm(A,Au,F);
+}
+async function viaJsdelivr(){
+  const b="https://cdn.jsdelivr.net/npm/firebase@10.12.2/";
+  const [A,Au,F]=await Promise.all([import(b+"app/+esm"),import(b+"auth/+esm"),import(b+"firestore/+esm")]);
+  return buildEsm(A,Au,F);
+}
+async function viaCdnjs(){
+  const b="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/";
+  await loadScript(b+"firebase-app-compat.min.js");
+  await Promise.all([loadScript(b+"firebase-auth-compat.min.js"),loadScript(b+"firebase-firestore-compat.min.js")]);
+  const fb=window.firebase;
+  fb.initializeApp(firebaseConfig);
+  const auth=fb.auth(),db=fb.firestore();
+  return {
+    auth,db,
+    Au:{
+      onAuthStateChanged:(a,cb)=>a.onAuthStateChanged(cb),
+      createUserWithEmailAndPassword:(a,e,p)=>a.createUserWithEmailAndPassword(e,p),
+      signInWithEmailAndPassword:(a,e,p)=>a.signInWithEmailAndPassword(e,p),
+      sendPasswordResetEmail:(a,e)=>a.sendPasswordResetEmail(e),
+      signOut:a=>a.signOut()
+    },
+    F:{
+      doc:(d,c,id)=>d.collection(c).doc(id),
+      setDoc:(r,v)=>r.set(v),
+      onSnapshot:(r,ok,fail)=>r.onSnapshot(s=>ok({
+        exists:()=>s.exists,
+        data:()=>s.data(),
+        metadata:s.metadata
+      }),fail)
+    }
+  };
+}
+const ready=!configured?Promise.resolve(null):(async()=>{
+  const errors=[];
+  for(const loader of [viaGstatic,viaJsdelivr,viaCdnjs]){
+    try{return await loader();}
+    catch(err){console.warn("Kaynak başarısız:",loader.name,err);errors.push(loader.name+": "+(err&&err.message||err));}
+  }
+  throw new Error(errors.join(" | "));
+})().catch(err=>{
+  console.error("Firebase yüklenemedi:",err);
+  showMsg(MSG_FAIL+" ("+(err&&err.message||err)+")","err");
+  return null;
+});
+if(!configured)showMsg(MSG_CONFIG,"err");
+
+function setMode(reg){
+  registerMode=reg;
+  document.getElementById("authTitle").textContent=reg?"Kayıt ol":"Giriş yap";
+  submitBtn.textContent=reg?"Kayıt ol":"Giriş yap";
+  document.getElementById("authToggle").textContent=reg?"Zaten hesabın var mı? Giriş yap":"Hesabın yok mu? Kayıt ol";
+  document.getElementById("authReset").style.display=reg?"none":"";
+  passEl.autocomplete=reg?"new-password":"current-password";
+  showMsg(configured?"":MSG_CONFIG,configured?"":"err");
+}
+document.getElementById("authToggle").addEventListener("click",()=>setMode(!registerMode));
+
+document.getElementById("authForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!configured)return showMsg(MSG_CONFIG,"err");
+  const email=emailEl.value.trim();
+  const pass=passEl.value;
+  if(!email)return showMsg("E-posta gir.","err");
+  if(pass.length<6)return showMsg("Şifre en az 6 karakter olmalı.","err");
+  submitBtn.disabled=true;
+  showMsg("Lütfen bekle...");
+  try{
+    const s=await ready;
+    if(!s)return showMsg(MSG_FAIL,"err");
+    if(registerMode)await s.Au.createUserWithEmailAndPassword(s.auth,email,pass);
+    else await s.Au.signInWithEmailAndPassword(s.auth,email,pass);
+    passEl.value="";
+    showMsg("");
+  }catch(err){
+    console.error(err);
+    showMsg(errText(err),"err");
+  }finally{
+    submitBtn.disabled=false;
+  }
+});
+
+document.getElementById("authReset").addEventListener("click",async()=>{
+  if(!configured)return showMsg(MSG_CONFIG,"err");
+  const email=emailEl.value.trim();
+  if(!email)return showMsg("Önce yukarıya e-posta adresini yaz.","err");
+  showMsg("Lütfen bekle...");
+  try{
+    const s=await ready;
+    if(!s)return showMsg(MSG_FAIL,"err");
+    await s.Au.sendPasswordResetEmail(s.auth,email);
+    showMsg("Şifre sıfırlama bağlantısı e-postana gönderildi. Spam klasörüne de bak.","ok");
+  }catch(err){
+    console.error(err);
+    showMsg(errText(err),"err");
+  }
+});
+
+window.cloudLogout=async()=>{
+  const s=await ready;
+  if(!s)return;
+  if(confirm("Çıkış yapılsın mı?"))s.Au.signOut(s.auth);
+};
+
+window.cloudSave=async d=>{
+  if(!ref)return;
+  const s=await ready;
+  if(!s)return;
+  try{
+    await s.F.setDoc(ref,{json:JSON.stringify(d),updatedAt:Date.now()});
+  }catch(err){
+    console.error(err);
+    alert("Veriler buluta kaydedilemedi. İnternet bağlantını ve Firestore kurallarını kontrol et.");
+  }
+};
+
+ready.then(s=>{
+  if(!s)return;
+  s.Au.onAuthStateChanged(s.auth,user=>{
+    if(unsub){unsub();unsub=null;}
+    if(!user){
+      ref=null;
+      setData(defaultData());
+      document.getElementById("sidebarUser").textContent="";
+      document.getElementById("accountInfo").textContent="Giriş yapılmadı.";
+      overlay.classList.remove("hidden");
+      return;
+    }
+    overlay.classList.add("hidden");
+    document.getElementById("sidebarUser").textContent=user.email||"";
+    document.getElementById("accountInfo").textContent="Giriş yapılan hesap: "+(user.email||"");
+    ref=s.F.doc(s.db,"users",user.uid);
+    unsub=s.F.onSnapshot(ref,snap=>{
+      if(snap.metadata.hasPendingWrites)return;
+      if(snap.exists()){
+        try{
+          const d=JSON.parse(snap.data().json);
+          if(isValidData(d))setData(d);
+        }catch(err){}
+      }else{
+        // İlk giriş: bu cihazda eski kayıt varsa buluta taşı, yoksa boş başla
+        const initial=loadLocalData()||defaultData();
+        setData(initial);
+        window.cloudSave(initial);
+      }
+    },err=>{
+      console.error(err);
+      alert("Veriler yüklenemedi. Firestore Database oluşturulmuş ve kurallar yayınlanmış mı kontrol et.");
+    });
+  });
+});
+})();
 </script>
 </body>
 </html>
