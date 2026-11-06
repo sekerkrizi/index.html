@@ -180,7 +180,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .form-card{max-width:900px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .field{min-width:0;margin-bottom:15px}
-.field label{display:block;font-size:12px;font-weight:750;margin-bottom:8px}
+.field label,.field .field-label{display:block;font-size:12px;font-weight:750;margin-bottom:8px}
 .field input,.field select{
   display:block;width:100%;min-height:44px;
   padding:12px;border:1px solid #e3e6f0;border-radius:10px;
@@ -188,6 +188,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
 }
 .field input:focus,.field select:focus{border-color:var(--primary)}
 .field input::placeholder{color:#adb1c1}
+
+/* Yan yana seçim butonları (Gelir/Gider, Kasa/Banka) */
+.choice-group{display:flex;flex-wrap:wrap;gap:10px}
+.choice{
+  flex:1 1 110px;min-height:46px;padding:10px 12px;
+  border:1.5px solid #e3e6f0;border-radius:10px;
+  background:#fff;color:#555c73;font-weight:750;font-size:13px;
+  transition:.15s;overflow-wrap:anywhere;
+}
+.choice:hover{border-color:#cfd3e4}
+.choice.selected{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.choice.income.selected{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.choice.expense.selected{border-color:var(--red);background:var(--red-light);color:var(--red)}
+.choice-empty{font-size:12px;color:var(--muted);padding:10px 0}
+
 .form-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:5px}
 .notice{
   padding:13px;border-radius:11px;background:#f4f3ff;
@@ -457,15 +472,24 @@ footer{text-align:center;color:#9a9fb0;font-size:10px;padding:30px 0 5px}
         <div class="card form-card">
           <div class="card-head"><h2>＋ Yeni işlem</h2></div>
           <form id="transactionForm">
-            <div class="field"><label for="txType">İşlem türü</label><select id="txType"><option value="income">Gelir</option><option value="expense">Gider</option></select></div>
+            <div class="field">
+              <span class="field-label" id="txTypeLabel">İşlem türü</span>
+              <input type="hidden" id="txType" value="">
+              <div class="choice-group" id="txTypeGroup" role="group" aria-labelledby="txTypeLabel">
+                <button type="button" class="choice income" data-value="income" aria-pressed="false">Gelir</button>
+                <button type="button" class="choice expense" data-value="expense" aria-pressed="false">Gider</button>
+              </div>
+            </div>
             <div class="field"><label for="txDesc">Açıklama</label><input id="txDesc" placeholder="Örn. Waffle satışı, malzeme alımı" required maxlength="120"></div>
             <div class="form-grid">
               <div class="field"><label for="txAmount">Tutar (₺)</label><input id="txAmount" type="number" min="0.01" step="0.01" placeholder="0,00" required></div>
               <div class="field"><label for="txDate">Tarih</label><input id="txDate" type="date" required></div>
             </div>
-            <div class="form-grid">
-              <div class="field"><label for="txCategory">Kategori</label><select id="txCategory"><option>Satış</option><option>Malzeme</option><option>Kira</option><option>Fatura</option><option>Maaş</option><option>Ulaşım</option><option>Diğer</option></select></div>
-              <div class="field"><label for="txAccount">Hesap</label><select id="txAccount"></select></div>
+            <div class="field"><label for="txCategory">Kategori</label><select id="txCategory"><option>Satış</option><option>Malzeme</option><option>Kira</option><option>Fatura</option><option>Maaş</option><option>Ulaşım</option><option>Diğer</option></select></div>
+            <div class="field">
+              <span class="field-label" id="txAccountLabel">Hesap</span>
+              <input type="hidden" id="txAccount" value="">
+              <div class="choice-group" id="txAccountGroup" role="group" aria-labelledby="txAccountLabel"></div>
             </div>
             <div class="form-actions"><button class="btn" type="submit">✓ İşlemi kaydet</button><button class="btn light" type="reset">Temizle</button></div>
           </form>
@@ -697,17 +721,64 @@ function newTransaction(){
   setTimeout(()=>document.getElementById("txDesc").focus({preventScroll:true}),100);
 }
 
-function renderAccountOptions(){
-  ["txAccount","paymentAccount"].forEach(id=>{
-    const el=document.getElementById(id);
-    const old=el.value;
-    const options=data.accounts.map(a=>
-      `<option value="${safe(a.id)}">${safe(a.name)}</option>`
-    ).join("");
-    el.innerHTML=options||'<option value="">Önce hesap ekle</option>';
-    if(data.accounts.some(a=>a.id===old))el.value=old;
-    el.disabled=!data.accounts.length;
+/* ===== Yan yana seçim butonları: işlem türü ve hesap ===== */
+function updateTypeChoices(){
+  const val=document.getElementById("txType").value;
+  document.querySelectorAll("#txTypeGroup .choice").forEach(b=>{
+    const on=b.dataset.value===val;
+    b.classList.toggle("selected",on);
+    b.setAttribute("aria-pressed",on?"true":"false");
   });
+}
+function updateAccountChoices(){
+  const val=document.getElementById("txAccount").value;
+  document.querySelectorAll("#txAccountGroup .choice").forEach(b=>{
+    const on=b.dataset.id===val;
+    b.classList.toggle("selected",on);
+    b.setAttribute("aria-pressed",on?"true":"false");
+  });
+}
+function renderTxAccountChoices(){
+  const group=document.getElementById("txAccountGroup");
+  const hidden=document.getElementById("txAccount");
+  if(!data.accounts.some(a=>a.id===hidden.value))hidden.value="";
+  group.innerHTML=data.accounts.length?data.accounts.map(a=>
+    `<button type="button" class="choice" data-id="${safe(a.id)}" aria-pressed="false">${safe(a.name)}</button>`
+  ).join(""):'<div class="choice-empty">Önce hesap ekle.</div>';
+  updateAccountChoices();
+}
+function clearTxChoices(){
+  document.getElementById("txType").value="";
+  document.getElementById("txAccount").value="";
+  updateTypeChoices();
+  updateAccountChoices();
+}
+document.getElementById("txTypeGroup").addEventListener("click",e=>{
+  const b=e.target.closest(".choice");
+  if(!b)return;
+  document.getElementById("txType").value=b.dataset.value;
+  updateTypeChoices();
+});
+document.getElementById("txAccountGroup").addEventListener("click",e=>{
+  const b=e.target.closest(".choice");
+  if(!b)return;
+  document.getElementById("txAccount").value=b.dataset.id;
+  updateAccountChoices();
+});
+document.getElementById("transactionForm").addEventListener("reset",()=>{
+  setTimeout(clearTxChoices,0);
+});
+
+function renderAccountOptions(){
+  const el=document.getElementById("paymentAccount");
+  const old=el.value;
+  const options=data.accounts.map(a=>
+    `<option value="${safe(a.id)}">${safe(a.name)}</option>`
+  ).join("");
+  el.innerHTML=options||'<option value="">Önce hesap ekle</option>';
+  if(data.accounts.some(a=>a.id===old))el.value=old;
+  el.disabled=!data.accounts.length;
+  renderTxAccountChoices();
 }
 function renderDashboard(){
   const t=totals();
@@ -816,18 +887,23 @@ function renderAll(){
 
 document.getElementById("transactionForm").addEventListener("submit",e=>{
   e.preventDefault();
+  const type=document.getElementById("txType").value;
   const amount=Math.round(Number(document.getElementById("txAmount").value)*100)/100;
   const accountId=document.getElementById("txAccount").value;
   const desc=document.getElementById("txDesc").value.trim();
+  if(!["income","expense"].includes(type))return alert("Gelir mi gider mi seçmelisin.");
+  if(!data.accounts.length)return alert("Önce bir hesap oluştur.");
+  if(!accountId)return alert("Hesap seçmelisin.");
   if(!desc)return alert("İşlem açıklaması gir.");
   if(!Number.isFinite(amount)||amount<=0)return alert("Geçerli bir tutar gir.");
   if(!data.accounts.some(a=>a.id===accountId))return alert("Önce bir hesap oluştur.");
   data.transactions.push({
-    id:uid(),type:document.getElementById("txType").value,desc,amount,
+    id:uid(),type,desc,amount,
     date:document.getElementById("txDate").value||today(),
     category:document.getElementById("txCategory").value,accountId
   });
   e.target.reset();
+  clearTxChoices();
   document.getElementById("txDate").value=today();
   save();
   alert("İşlem kaydedildi.");
