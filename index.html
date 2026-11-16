@@ -24,12 +24,13 @@ button.o{background:var(--pl);color:var(--p)}button.d{background:#fee2e2;color:v
 .sheet{background:var(--c);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px}
 #toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1f1b2e;color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:14px;display:none}
 .warn{background:#fef3c7;color:#92400e;border-radius:10px;padding:10px;font-size:13px;margin-bottom:12px}
+.accountbar{background:#f8f7ff;border:1px solid var(--b);border-radius:10px;padding:10px;margin-bottom:10px}.accountbar input{display:inline-block;width:32%;margin:8px 5px 0 0;padding:8px}.accountbar button{margin-top:8px}
 </style></head><body>
 <div id="toast"></div><div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== AYAR: Supabase bilgilerini buraya yazın (anon/publishable anahtar; service_role ASLA) ===== */
-const CFG={url:'',key:''};
+const CFG={url:'https://pifytocnfnowzgigjrrz.supabase.co',key:'sb_publishable_KuLAJDhKoilvgvE7XAlbTQ_nzV_4ubj'};
 /* ================================================================================================= */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -68,9 +69,9 @@ const ig=sum(t=>t.type==='gelir'&&t.scope==='i'),ie=sum(t=>t.type==='gider'&&t.s
 return{cash,card,bo,al,net:cash-card-bo+al,kg:sum(t=>t.type==='gider'&&t.scope==='k'),ig,ie,ik:ig-ie}}
 /* --- arayüz --- */
 function render(){
-if(sb&&!user){$('#app').innerHTML=`<main><div class="card"><h3>Yusuf Keder | Finans Merkezi</h3><label>E-posta</label><input id="em" type="email" autocomplete="username"><label>Şifre</label><input id="pw" type="password" autocomplete="current-password"><button class="b" onclick="auth(0)">Giriş yap</button> <button class="b o" onclick="auth(1)">Kayıt ol</button></div></main>`;return}
 const nav=[['home','Genel'],['tx','İşlemler'],['acc','Hesaplar'],['debt','Borç/Alacak'],['set','Ayarlar']];
-$('#app').innerHTML=`<header><h1>Yusuf Keder | Finans Merkezi</h1><div class="tabs">${[['h','Genel'],['k','Kişisel'],['i','Şeker Krizi']].map(x=>`<button class="${SC===x[0]?'on':''}" onclick="SC='${x[0]}';render()">${x[1]}</button>`).join('')}</div></header>
+const accountBox=user?`<div class="accountbar">☁️ ${esc(user.email)} <button class="b o" style="padding:5px 9px;font-size:12px" onclick="sb.auth.signOut()">Çıkış</button></div>`:`<div class="accountbar"><b>Telefon ve bilgisayar senkronizasyonu</b><div class="s">Hesap oluşturarak kayıtlarını cihazlar arasında kullan.</div><input id="em" type="email" placeholder="E-posta" autocomplete="username"><input id="pw" type="password" placeholder="Şifre" autocomplete="new-password"><button class="b" onclick="auth(0)">Giriş yap</button> <button class="b o" onclick="auth(1)">Kayıt ol</button>${sb?'':'<div class="s neg" style="margin-top:6px">Bulut bağlantısı henüz kurulmadı. Supabase ayarları eklenince hesap sistemi aktifleşir.</div>'}</div>`;
+$('#app').innerHTML=`<header><h1>Yusuf Keder | Finans Merkezi</h1>${accountBox}<div class="tabs">${[['h','Genel'],['k','Kişisel'],['i','Şeker Krizi']].map(x=>`<button class="${SC===x[0]?'on':''}" onclick="SC='${x[0]}';render()">${x[1]}</button>`).join('')}</div></header>
 <main>${sb?'':'<div class="warn">Yerel mod: veriler yalnızca bu cihazın tarayıcısında durur. Telefon ve bilgisayar arasında otomatik geçiş için Supabase URL/anon anahtarını ekleyip veritabanında app_state tablosunu oluşturun.</div>'}${views[V]()}</main>
 <button class="fab" onclick="openTx()">+ İşlem Ekle</button><nav>${nav.map(n=>`<button class="${V===n[0]?'on':''}" onclick="V='${n[0]}';render()">${n[1]}</button>`).join('')}</nav>`}
 const sgn=t=>({gelir:1,borc_al:1,alacak_tahsil:1,gider:-1,borc_ode:-1,alacak_ver:-1}[t.type]||0);
@@ -121,7 +122,7 @@ function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectUR
 const bk=()=>dl('finans-yedek-'+today()+'.json',JSON.stringify(S),'application/json');
 function csv(){const A=id=>(S.accounts.find(a=>a.id===id)||{}).name||'';const r=[['Tarih','Tür','Tutar','Hesap','Hedef','Kategori','Kişi','Alan','Açıklama']].concat(live().map(t=>[t.date,TYPES[t.type]||'Düzeltme',(t.amt/100).toFixed(2),A(t.acc),A(t.to),t.cat||'',t.person||'',t.scope,t.desc||'']));dl('islemler-'+today()+'.csv','\ufeff'+r.map(x=>x.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\n'),'text/csv')}
 function rs(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.accounts)||!Array.isArray(d.tx)||d.tx.some(t=>!t.id||!(t.amt>0)||!t.date||!t.type))throw 0;if(!confirm('Yedek mevcut verilerle BİRLEŞTİRİLECEK (aynı kayıtlarda en yeni olan kalır). Devam edilsin mi?'))return;S=merge(S,{...d,log:d.log||[]});save();toast('Yedek yüklendi.')}catch(e){toast('Geçersiz yedek dosyası.')}};r.readAsText(f)}
-async function auth(up){const e=$('#em').value.trim(),p=$('#pw').value;const{error}=up?await sb.auth.signUp({email:e,password:p}):await sb.auth.signInWithPassword({email:e,password:p});if(error)toast(error.message);else if(up)toast('Kayıt oluşturuldu. E-posta onayı açıksa onaylayın.')}
+async function auth(up){if(!sb)return toast('Önce Supabase bağlantısı kurulmalı. CFG.url ve CFG.key alanlarını doldurun.');const e=$('#em').value.trim(),p=$('#pw').value;if(!e||p.length<6)return toast('Geçerli e-posta ve en az 6 karakterli şifre girin.');const{error}=up?await sb.auth.signUp({email:e,password:p}):await sb.auth.signInWithPassword({email:e,password:p});if(error)toast(error.message);else if(up)toast('Kayıt oluşturuldu. E-posta onayı açıksa onaylayın.')}
 async function start(){
 if(CFG.url&&CFG.key&&window.supabase){sb=supabase.createClient(CFG.url,CFG.key);
 const{data}=await sb.auth.getSession();user=data.session?data.session.user:null;
